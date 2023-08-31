@@ -1,19 +1,48 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import Listing from "../listing";
+import config from "../../config";
+
+const createTodo = (title) => {
+  return () => {
+    fetch(`${config.apiUrl}/api/todo/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title }),
+    });
+  };
+};
 
 const Header = (p) => {
-  const addTodo = () => {
-    const task = p.text.trim();
+  const [userInput, setUserInput] = useState("");
+  const queryClient = useQueryClient();
+
+  const todoMutation = useMutation(createTodo(userInput), {
+    onSuccess: () => {
+      console.log("Success");
+      setUserInput("");
+      queryClient.invalidateQueries(["todo"]);
+    },
+    onError: (err) => {
+      console.log("Eroor", err);
+    },
+  });
+
+  const addTodo = (e) => {
+    e.preventDefault();
+    const task = userInput.trim();
     if (task) {
-      //dispatch(addTask({ text: p.text || "" }));
-      p.setText("");
+      todoMutation.mutate();
+      // setUserInput("")
     }
   };
 
   const handleEnterPress = async (e) => {
     if (e.key === "Enter") {
-      //dispatch(addTask({ text: p.text || "" }));
-      p.setText("");
+      todoMutation.mutate();
     }
   };
 
@@ -28,7 +57,7 @@ const Header = (p) => {
             name="addTodo"
             placeholder="Add new item"
             value={p.text}
-            onChange={(e) => p.setText(e.target.value)}
+            onChange={(e) => setUserInput(e.target.value)}
             onKeyDown={handleEnterPress}
           />
           <button
@@ -45,21 +74,26 @@ const Header = (p) => {
 };
 
 const Todo = () => {
-  const [userInput, setUserInput] = useState("");
+  const { data, isFetching } = useQuery(["todo"], async () =>
+    (await fetch(`${config.apiUrl}/api/todos`)).json()
+  );
+
+  if (isFetching) {
+    return (
+      <span
+        className="bg-white rounded shadow p-6 m-5 mt-12 
+            w-full lg:w-3/4 lg:max-w-lg flex justify-center"
+      >
+        Loading...
+      </span>
+    );
+  }
 
   return (
     <>
       <div className="bg-white rounded shadow p-6 m-5 mt-12 w-full lg:w-3/4 lg:max-w-lg">
-        <Header setText={setUserInput} text={userInput} />
-        <Listing
-          todos={[
-            { id: 1, text: "Nope-----" },
-            { id: 2, text: "Bla bla bla" },
-            { id: 3, text: "Do this task" },
-          ]}
-          useState
-          setUserInput
-        />
+        <Header />
+        <Listing todos={data?.data || []} />
       </div>
     </>
   );
