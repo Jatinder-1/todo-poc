@@ -3,23 +3,44 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import config from "../../config";
 
 const deleteTodo = async (id) => {
-  await fetch(`${config.apiUrl}/api/todo/delete`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ id }),
-  });
+  try {
+    const res = await fetch(`${config.apiUrl}/api/todo/delete`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id }),
+    });
+    const data = await res.json();
+    if (data?.status === "error") {
+      throw new Error(data?.error);
+    }
+
+    return data;
+  } catch (err) {
+    throw new Error(err || "Some thing went worng");
+  }
 };
 
 const updateTodo = async (item) => {
-  await fetch(`${config.apiUrl}/api/todo/update`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(item),
-  });
+  try {
+    const res = await fetch(`${config.apiUrl}/api/todo/update`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(item),
+    });
+    const data = await res.json();
+
+    if (data?.status === "error") {
+      throw new Error(data?.error);
+    }
+
+    return data;
+  } catch (err) {
+    throw new Error(err || "Some thing went worng");
+  }
 };
 
 const Listing = (p) => {
@@ -32,6 +53,7 @@ const Listing = (p) => {
     },
     onSuccess: () => {
       console.log("Success");
+      // Invalidate and refetch
       queryClient.invalidateQueries(["todo"]);
     },
     onError: (err) => {
@@ -43,10 +65,9 @@ const Listing = (p) => {
     mutationFn: (item) => {
       return updateTodo(item);
     },
-    enabled: false,
-    staleTime: Infinity,
-    onSuccess: () => {
-      console.log("Success");
+    onSuccess: (res) => {
+      console.log("Success", res);
+      // Invalidate and refetch
       queryClient.invalidateQueries(["todo"]);
     },
     onError: (err) => {
@@ -60,6 +81,10 @@ const Listing = (p) => {
         <span>No item found!</span>
       </div>
     );
+  }
+
+  if (todoUpdateMutation.isLoading || todoDeleteMutation.isLoading) {
+    return <span>Loading...</span>;
   }
 
   return (

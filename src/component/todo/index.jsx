@@ -4,28 +4,38 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Listing from "../listing";
 import config from "../../config";
 
-const createTodo = (title) => {
-  return async () => {
-    await fetch(`${config.apiUrl}/api/todo/create`, {
+const createTodo = async (title) => {
+  try {
+    const res = await fetch(`${config.apiUrl}/api/todo/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ title }),
     });
-  };
+    const data = await res.json();
+    if (data?.status === "error") {
+      throw new Error(data?.error);
+    }
+
+    return data;
+  } catch (err) {
+    throw new Error(err || "Some thing went worng");
+  }
 };
 
 const Header = (p) => {
   const [userInput, setUserInput] = useState("");
   const queryClient = useQueryClient();
 
-  const todoMutation = useMutation(createTodo(userInput), {
-    enabled: false,
-    staleTime: Infinity,
+  const todoMutation = useMutation({
+    mutationFn: () => {
+      return createTodo(userInput);
+    },
     onSuccess: () => {
       console.log("Success");
       setUserInput("");
+      // Invalidate and refetch
       queryClient.invalidateQueries(["todo"]);
     },
     onError: (err) => {
@@ -76,11 +86,15 @@ const Header = (p) => {
 };
 
 const Todo = () => {
-  const { data, isFetching } = useQuery(["todo"], async () =>
-    (await fetch(`${config.apiUrl}/api/todos`)).json()
+  const { data, isLoading } = useQuery(
+    ["todo"],
+    async () => (await fetch(`${config.apiUrl}/api/todos`)).json(),
+    {
+      refetchOnWindowFocus: false,
+    }
   );
 
-  if (isFetching) {
+  if (isLoading) {
     return (
       <span
         className="bg-white rounded shadow p-6 m-5 mt-12 
