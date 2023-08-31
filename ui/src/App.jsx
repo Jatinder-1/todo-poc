@@ -1,4 +1,6 @@
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
 import Todo from "./component/todo";
 
 const queryClient = new QueryClient();
@@ -15,6 +17,7 @@ function App() {
             <Todo />
           </div>
         </div>
+        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </>
   );

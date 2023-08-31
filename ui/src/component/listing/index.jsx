@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 
 import config from "../../config";
 
@@ -46,6 +46,7 @@ const updateTodo = async (item) => {
 const Listing = (p) => {
   const { todos } = p;
   const queryClient = useQueryClient();
+  //const { data: todo } = useQuery(['todo']);
 
   const todoDeleteMutation = useMutation({
     mutationFn: (id) => {

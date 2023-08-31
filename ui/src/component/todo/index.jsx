@@ -91,6 +91,7 @@ const Todo = () => {
     async () => (await fetch(`${config.apiUrl}/api/todos`)).json(),
     {
       refetchOnWindowFocus: false,
+      retry: 2, // retry up to 2 times
     }
   );
 
