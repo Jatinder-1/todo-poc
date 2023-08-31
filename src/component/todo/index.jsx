@@ -5,8 +5,8 @@ import Listing from "../listing";
 import config from "../../config";
 
 const createTodo = (title) => {
-  return () => {
-    fetch(`${config.apiUrl}/api/todo/create`, {
+  return async () => {
+    await fetch(`${config.apiUrl}/api/todo/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -21,6 +21,8 @@ const Header = (p) => {
   const queryClient = useQueryClient();
 
   const todoMutation = useMutation(createTodo(userInput), {
+    enabled: false,
+    staleTime: Infinity,
     onSuccess: () => {
       console.log("Success");
       setUserInput("");

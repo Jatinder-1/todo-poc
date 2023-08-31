@@ -1,19 +1,19 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import config from "../../config";
 
-const deleteTodo = (id) => {  
-    fetch(`${config.apiUrl}/api/todo/delete`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id}),
-    });
+const deleteTodo = async (id) => {
+  await fetch(`${config.apiUrl}/api/todo/delete`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id }),
+  });
 };
 
-const updateTodo = (item) => {  
-  fetch(`${config.apiUrl}/api/todo/update`, {
+const updateTodo = async (item) => {
+  await fetch(`${config.apiUrl}/api/todo/update`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -28,7 +28,7 @@ const Listing = (p) => {
 
   const todoDeleteMutation = useMutation({
     mutationFn: (id) => {
-     return deleteTodo(id)
+      return deleteTodo(id);
     },
     onSuccess: () => {
       console.log("Success");
@@ -41,8 +41,10 @@ const Listing = (p) => {
 
   const todoUpdateMutation = useMutation({
     mutationFn: (item) => {
-     return updateTodo(item)
+      return updateTodo(item);
     },
+    enabled: false,
+    staleTime: Infinity,
     onSuccess: () => {
       console.log("Success");
       queryClient.invalidateQueries(["todo"]);
@@ -64,13 +66,21 @@ const Listing = (p) => {
     <>
       {todos.map((todo) => (
         <div key={todo.id} className="flex mb-4 items-center">
-          <p className={`w-full text-grey-darkest ${todo.isDone && 'line-through'}`}>{todo.text}</p>
+          <p
+            className={`w-full text-grey-darkest ${
+              todo.isDone && "line-through"
+            }`}
+          >
+            {todo.text}
+          </p>
           <button
             className="flex-no-shrink p-2 ml-4 mr-2 border-2 
               rounded hover:text-white text-green-500
                border-green-500 hover:bg-green-500"
             title={todo.isDone ? "undo" : "done"}
-            onClick={() => todoUpdateMutation.mutate({id: todo.id, status: !todo.isDone})}
+            onClick={() =>
+              todoUpdateMutation.mutate({ id: todo.id, status: !todo.isDone })
+            }
           >
             Done
           </button>
