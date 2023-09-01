@@ -43,8 +43,9 @@ const Header = (p) => {
     },
   });
 
-  const addTodo = (e) => {
-    e.preventDefault();
+  const addTodo = () => {
+    if (todoMutation.isLoading) return;
+
     const task = userInput.trim();
     if (task) {
       todoMutation.mutate();
@@ -54,7 +55,7 @@ const Header = (p) => {
 
   const handleEnterPress = async (e) => {
     if (e.key === "Enter") {
-      todoMutation.mutate();
+      addTodo();
     }
   };
 
@@ -68,14 +69,15 @@ const Header = (p) => {
               px-3 mr-4 text-grey-darker"
             name="addTodo"
             placeholder="Add new item"
-            value={p.text}
+            value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             onKeyDown={handleEnterPress}
           />
           <button
             onClick={addTodo}
+            disabled={todoMutation.isLoading}
             className="flex-no-shrink p-2 border-2 rounded text-teal-500
-             border-teal-500 hover:text-white hover:bg-teal-500"
+             border-teal-500 hover:text-white hover:bg-teal-500 disabled:opacity-25"
           >
             Add
           </button>

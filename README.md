@@ -23,7 +23,7 @@ This application is build in React with vite and Express.
 
 ### Backend
 
-- Cd to the `sever` folder and hit the `npm i`
+- Cd to the `server` folder and hit the `npm i`
 - Use these scripts:
   - start: `npm run dev` to start the local server
 
