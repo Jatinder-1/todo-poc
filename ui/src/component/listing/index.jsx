@@ -66,10 +66,18 @@ const Listing = (p) => {
     mutationFn: (item) => {
       return updateTodo(item);
     },
-    onSuccess: (res) => {
-      console.log("Success", res);
+    onSuccess: (_, data) => {
+      // update data without refacting from the API
+      queryClient.setQueryData(["todo"], (oldData) => {
+        let oldTodos = oldData.data;
+        const itemIndex = oldTodos.findIndex((e) => e.id === data.id);
+
+        oldTodos[itemIndex].isDone = data.status;
+        return { message: "Data updated", data: oldTodos };
+      });
+
       // Invalidate and refetch
-      queryClient.invalidateQueries(["todo"]);
+      //queryClient.invalidateQueries(["todo"]);
     },
     onError: (err) => {
       console.log("Eroor", err);
@@ -102,18 +110,20 @@ const Listing = (p) => {
           <button
             className="flex-no-shrink p-2 ml-4 mr-2 border-2 
               rounded hover:text-white text-green-500
-               border-green-500 hover:bg-green-500"
+               border-green-500 hover:bg-green-500 disabled:opacity-25"
             title={todo.isDone ? "undo" : "done"}
+            disabled={todoUpdateMutation.isLoading}
             onClick={() =>
               todoUpdateMutation.mutate({ id: todo.id, status: !todo.isDone })
             }
           >
-            Done
+            {todo.isDone ? "Undo" : "Done"}
           </button>
           <button
             className="flex-no-shrink p-2 ml-2 border-2 rounded text-red-500
-               border-red-500 hover:text-white hover:bg-red-500"
+               border-red-500 hover:text-white hover:bg-red-500 disabled:opacity-25"
             title="delete"
+            disabled={todoDeleteMutation.isLoading}
             onClick={() => todoDeleteMutation.mutate(todo.id)}
           >
             Remove
